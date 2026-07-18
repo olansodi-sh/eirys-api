@@ -34,6 +34,9 @@ export const PERMISSIONS = {
   // Despacho
   DISPATCH_READ: 'dispatch.read',
   DISPATCH_WRITE: 'dispatch.write',
+  // Compras / gastos
+  PURCHASES_READ: 'purchases.read',
+  PURCHASES_WRITE: 'purchases.write',
 } as const;
 
 export type PermissionCode = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];

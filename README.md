@@ -28,6 +28,13 @@ NestJS 11 + TypeORM + PostgreSQL.
 - **Facturas recurrentes**: plantilla + frecuencia (semanal/mensual) y endpoint `run` que genera las vencidas y avanza la próxima fecha.
 - **Despacho**: control de entrada/salida a demanda con líneas y estado (pendiente/completado).
 
+## Fase 4 — implementado (compras y gastos)
+
+- **Órdenes de compra** a proveedor (no mueven inventario por sí solas).
+- **Factura de compra / documento de soporte**: recepción **transaccional** que **aumenta el inventario** y actualiza el costo (último costo) de cada variante; marca la orden ligada como recibida y guarda el número de comprobante externo.
+- **Nota débito** de compra (cargo adicional del proveedor).
+- Permisos `purchases.read/write` (solo Admin).
+
 ## Requisitos
 
 - Node 20+ (se usa `--ignore-engines` para instalar en Node 24).
