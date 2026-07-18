@@ -37,6 +37,10 @@ export const PERMISSIONS = {
   // Compras / gastos
   PURCHASES_READ: 'purchases.read',
   PURCHASES_WRITE: 'purchases.write',
+  // Reportes y libro diario
+  REPORTS_READ: 'reports.read',
+  // Kanban de tareas
+  TASKS_MANAGE: 'tasks.manage',
 } as const;
 
 export type PermissionCode = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
@@ -64,6 +68,8 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, PermissionCode[]> = {
     PERMISSIONS.VOUCHERS_MANAGE,
     PERMISSIONS.DISPATCH_READ,
     PERMISSIONS.DISPATCH_WRITE,
+    PERMISSIONS.REPORTS_READ,
+    PERMISSIONS.TASKS_MANAGE,
   ],
   [ROLE_NAMES.CAJERO]: [
     PERMISSIONS.INVENTORY_READ,
@@ -77,5 +83,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, PermissionCode[]> = {
     PERMISSIONS.VOUCHERS_MANAGE,
     PERMISSIONS.CREDIT_NOTES_WRITE,
     PERMISSIONS.DISPATCH_READ,
+    PERMISSIONS.REPORTS_READ,
+    PERMISSIONS.TASKS_MANAGE,
   ],
 };

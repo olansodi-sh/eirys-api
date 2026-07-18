@@ -35,6 +35,13 @@ NestJS 11 + TypeORM + PostgreSQL.
 - **Nota débito** de compra (cargo adicional del proveedor).
 - Permisos `purchases.read/write` (solo Admin).
 
+## Fase 5 — implementado (contabilidad y análisis)
+
+- **Reportes**: reporte del día, ventas por fecha, análisis comercial 360 (top productos/clientes), costo de inventario por producto y valorización por bodega.
+- **Libro diario**: registro operativo (ingresos por ventas, egresos por compras) por rango de fechas.
+- **Kanban (Mis tareas)**: columnas por defecto, tarjetas y movimiento entre columnas.
+- Permisos `reports.read` y `tasks.manage`.
+
 ## Requisitos
 
 - Node 20+ (se usa `--ignore-engines` para instalar en Node 24).

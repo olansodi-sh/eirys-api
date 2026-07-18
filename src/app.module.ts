@@ -20,6 +20,8 @@ import { CreditNotesModule } from './modules/credit-notes/credit-notes.module';
 import { RecurringModule } from './modules/recurring/recurring.module';
 import { DispatchModule } from './modules/dispatch/dispatch.module';
 import { PurchasesModule } from './modules/purchases/purchases.module';
+import { ReportsModule } from './modules/reports/reports.module';
+import { TasksModule } from './modules/tasks/tasks.module';
 import { SeedModule } from './database/seeds/seed.module';
 
 @Module({
@@ -44,6 +46,8 @@ import { SeedModule } from './database/seeds/seed.module';
     RecurringModule,
     DispatchModule,
     PurchasesModule,
+    ReportsModule,
+    TasksModule,
     SeedModule,
   ],
   providers: [
