@@ -20,6 +20,14 @@ NestJS 11 + TypeORM + PostgreSQL.
 - **Pagos recibidos**: abonos con aplicación (parcial/total) a facturas y saldo del tercero.
 - Campos reservados para **facturación electrónica DIAN** (nullable) en `sales`.
 
+## Fase 3 — implementado (complementos de venta)
+
+- **Cotizaciones**: CRUD y **conversión a factura** (reutiliza el flujo de ventas y descuenta stock).
+- **Vales**: emisión, consulta por código y redención con control de saldo.
+- **Notas crédito** sobre factura: total/parcial, **devolución de inventario** (restock) y **generación de vale**, transaccional; anula la factura en devolución total.
+- **Facturas recurrentes**: plantilla + frecuencia (semanal/mensual) y endpoint `run` que genera las vencidas y avanza la próxima fecha.
+- **Despacho**: control de entrada/salida a demanda con líneas y estado (pendiente/completado).
+
 ## Requisitos
 
 - Node 20+ (se usa `--ignore-engines` para instalar en Node 24).

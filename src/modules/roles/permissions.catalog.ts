@@ -22,6 +22,18 @@ export const PERMISSIONS = {
   CASH_MANAGE: 'cash.manage',
   // Pagos recibidos
   PAYMENTS_WRITE: 'payments.write',
+  // Cotizaciones
+  QUOTES_READ: 'quotes.read',
+  QUOTES_WRITE: 'quotes.write',
+  // Vales
+  VOUCHERS_MANAGE: 'vouchers.manage',
+  // Notas crédito
+  CREDIT_NOTES_WRITE: 'credit_notes.write',
+  // Facturas recurrentes
+  RECURRING_MANAGE: 'recurring.manage',
+  // Despacho
+  DISPATCH_READ: 'dispatch.read',
+  DISPATCH_WRITE: 'dispatch.write',
 } as const;
 
 export type PermissionCode = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
@@ -44,6 +56,11 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, PermissionCode[]> = {
     PERMISSIONS.PRICING_READ,
     PERMISSIONS.SALES_READ,
     PERMISSIONS.SALES_WRITE,
+    PERMISSIONS.QUOTES_READ,
+    PERMISSIONS.QUOTES_WRITE,
+    PERMISSIONS.VOUCHERS_MANAGE,
+    PERMISSIONS.DISPATCH_READ,
+    PERMISSIONS.DISPATCH_WRITE,
   ],
   [ROLE_NAMES.CAJERO]: [
     PERMISSIONS.INVENTORY_READ,
@@ -53,5 +70,9 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, PermissionCode[]> = {
     PERMISSIONS.SALES_WRITE,
     PERMISSIONS.CASH_MANAGE,
     PERMISSIONS.PAYMENTS_WRITE,
+    PERMISSIONS.QUOTES_READ,
+    PERMISSIONS.VOUCHERS_MANAGE,
+    PERMISSIONS.CREDIT_NOTES_WRITE,
+    PERMISSIONS.DISPATCH_READ,
   ],
 };

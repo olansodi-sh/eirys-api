@@ -14,6 +14,11 @@ import { PricingModule } from './modules/pricing/pricing.module';
 import { CashModule } from './modules/cash/cash.module';
 import { SalesModule } from './modules/sales/sales.module';
 import { PaymentsModule } from './modules/payments/payments.module';
+import { QuotesModule } from './modules/quotes/quotes.module';
+import { VouchersModule } from './modules/vouchers/vouchers.module';
+import { CreditNotesModule } from './modules/credit-notes/credit-notes.module';
+import { RecurringModule } from './modules/recurring/recurring.module';
+import { DispatchModule } from './modules/dispatch/dispatch.module';
 import { SeedModule } from './database/seeds/seed.module';
 
 @Module({
@@ -32,6 +37,11 @@ import { SeedModule } from './database/seeds/seed.module';
     CashModule,
     SalesModule,
     PaymentsModule,
+    QuotesModule,
+    VouchersModule,
+    CreditNotesModule,
+    RecurringModule,
+    DispatchModule,
     SeedModule,
   ],
   providers: [
