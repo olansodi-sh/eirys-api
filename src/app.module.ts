@@ -10,6 +10,10 @@ import { UsersModule } from './modules/users/users.module';
 import { RolesModule } from './modules/roles/roles.module';
 import { ThirdPartiesModule } from './modules/third-parties/third-parties.module';
 import { InventoryModule } from './modules/inventory/inventory.module';
+import { PricingModule } from './modules/pricing/pricing.module';
+import { CashModule } from './modules/cash/cash.module';
+import { SalesModule } from './modules/sales/sales.module';
+import { PaymentsModule } from './modules/payments/payments.module';
 import { SeedModule } from './database/seeds/seed.module';
 
 @Module({
@@ -24,6 +28,10 @@ import { SeedModule } from './database/seeds/seed.module';
     RolesModule,
     ThirdPartiesModule,
     InventoryModule,
+    PricingModule,
+    CashModule,
+    SalesModule,
+    PaymentsModule,
     SeedModule,
   ],
   providers: [

@@ -76,7 +76,8 @@ export class SeedService implements OnApplicationBootstrap {
     const adminRole = await this.roles.findOne({
       where: { name: ROLE_NAMES.ADMIN },
     });
-    const password = this.config.get<string>('ADMIN_PASSWORD', 'admin123');
+    const configuredPassword = this.config.get<string>('ADMIN_PASSWORD');
+    const password = configuredPassword ?? 'admin123';
     await this.users.save(
       this.users.create({
         name: 'Administrador',
@@ -86,6 +87,12 @@ export class SeedService implements OnApplicationBootstrap {
         active: true,
       }),
     );
-    this.logger.log(`Usuario admin creado: ${email} (password: ${password})`);
+    // No registrar nunca la contraseña en logs.
+    this.logger.log(
+      `Usuario admin creado: ${email}` +
+        (configuredPassword
+          ? ''
+          : ' (contraseña por defecto "admin123", cámbiela)'),
+    );
   }
 }

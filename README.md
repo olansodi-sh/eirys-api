@@ -12,6 +12,14 @@ NestJS 11 + TypeORM + PostgreSQL.
 - **Inventario**: categorías, bodegas (incl. bodega de calidad), productos con **variantes talla/color** y **stock por variante+bodega**.
 - **Swagger** en `/docs`.
 
+## Fase 2 — implementado (POS core)
+
+- **Listas de precios** (con lista por defecto y precio por variante).
+- **Caja**: sesiones (apertura/cierre con arqueo) y movimientos (ingresos/egresos).
+- **Ventas/facturas**: creación **transaccional** que descuenta stock, valida existencias y registra el movimiento de caja; genera consecutivo `F-00001`.
+- **Pagos recibidos**: abonos con aplicación (parcial/total) a facturas y saldo del tercero.
+- Campos reservados para **facturación electrónica DIAN** (nullable) en `sales`.
+
 ## Requisitos
 
 - Node 20+ (se usa `--ignore-engines` para instalar en Node 24).
