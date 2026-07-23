@@ -47,6 +47,7 @@ export class Quote extends BaseEntity {
   @OneToMany(() => QuoteLine, (line) => line.quote, {
     cascade: true,
     eager: true,
+    orphanedRowAction: 'delete',
   })
   lines: QuoteLine[];
 }

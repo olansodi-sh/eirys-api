@@ -2,14 +2,21 @@ import {
   Body,
   Controller,
   Delete,
+  FileTypeValidator,
   Get,
   Param,
+  ParseFilePipe,
   ParseUUIDPipe,
   Patch,
   Post,
   Query,
+  Res,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import type { Response } from 'express';
+import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { ProductsService } from '../services/products.service';
 import { CreateProductDto, UpdateProductDto } from '../dto/product.dto';
 import { RequirePermissions } from '../../../common/decorators/permissions.decorator';
@@ -31,6 +38,40 @@ export class ProductsController {
   @Get()
   findAll(@Query('search') search?: string) {
     return this.service.findAll(search);
+  }
+
+  @RequirePermissions(PERMISSIONS.INVENTORY_READ)
+  @Get('export')
+  async export(
+    @Res() res: Response,
+    @Query('priceListId') priceListId?: string,
+  ) {
+    const buffer = await this.service.exportToExcel(priceListId);
+    res.set({
+      'Content-Type':
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'Content-Disposition': 'attachment; filename="productos.xlsx"',
+    });
+    res.send(buffer);
+  }
+
+  @RequirePermissions(PERMISSIONS.INVENTORY_WRITE)
+  @Post('import')
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(FileInterceptor('file'))
+  importExcel(
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new FileTypeValidator({
+            fileType: /(spreadsheetml|xlsx|vnd\.ms-excel)/,
+          }),
+        ],
+      }),
+    )
+    file: Express.Multer.File,
+  ) {
+    return this.service.importFromExcel(file.buffer);
   }
 
   @RequirePermissions(PERMISSIONS.INVENTORY_READ)

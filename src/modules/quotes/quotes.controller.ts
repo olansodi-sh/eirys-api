@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseUUIDPipe,
@@ -9,7 +10,11 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { QuotesService } from './quotes.service';
-import { ConvertQuoteDto, CreateQuoteDto } from './dto/quote.dto';
+import {
+  ConvertQuoteDto,
+  CreateQuoteDto,
+  UpdateQuoteDto,
+} from './dto/quote.dto';
 import { QuoteStatus } from './entities/quote.entity';
 import { RequirePermissions } from '../../common/decorators/permissions.decorator';
 import { PERMISSIONS } from '../roles/permissions.catalog';
@@ -47,6 +52,21 @@ export class QuotesController {
     @Body('status') status: QuoteStatus,
   ) {
     return this.service.setStatus(id, status);
+  }
+
+  @RequirePermissions(PERMISSIONS.QUOTES_WRITE)
+  @Patch(':id')
+  update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateQuoteDto,
+  ) {
+    return this.service.update(id, dto);
+  }
+
+  @RequirePermissions(PERMISSIONS.QUOTES_WRITE)
+  @Delete(':id')
+  remove(@Param('id', ParseUUIDPipe) id: string) {
+    return this.service.remove(id);
   }
 
   @RequirePermissions(PERMISSIONS.SALES_WRITE)

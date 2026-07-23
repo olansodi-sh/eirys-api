@@ -2,10 +2,13 @@ import { Type } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
+  IsInt,
   IsNumber,
+  IsObject,
   IsOptional,
   IsString,
   IsUUID,
+  Max,
   Min,
   ValidateNested,
 } from 'class-validator';
@@ -30,6 +33,22 @@ export class VariantDto {
   @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0)
   cost?: number;
+
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
+  listPrice?: number;
+
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
+  @Max(100)
+  discountPercent?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  stockQty?: number;
 }
 
 export class CreateProductDto {
@@ -41,11 +60,23 @@ export class CreateProductDto {
 
   @IsOptional()
   @IsString()
-  brand?: string;
+  description?: string;
+
+  @IsOptional()
+  @IsObject()
+  characteristics?: Record<string, string>;
 
   @IsOptional()
   @IsString()
-  material?: string;
+  cuidados?: string;
+
+  @IsOptional()
+  @IsUUID()
+  brandId?: string;
+
+  @IsOptional()
+  @IsUUID()
+  materialId?: string;
 
   @IsOptional()
   @IsString()

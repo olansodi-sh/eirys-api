@@ -2,17 +2,23 @@ import {
   Body,
   Controller,
   Delete,
+  FileTypeValidator,
   Get,
   Param,
+  ParseFilePipe,
   ParseUUIDPipe,
   Patch,
   Post,
   Query,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { PricingService } from './pricing.service';
 import {
   CreatePriceListDto,
+  ImportPriceListDto,
   SetPricesDto,
   UpdatePriceListDto,
 } from './dto/pricing.dto';
@@ -76,5 +82,25 @@ export class PricingController {
   @Delete(':id')
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.service.remove(id);
+  }
+
+  @RequirePermissions(PERMISSIONS.PRICING_WRITE)
+  @Post('import')
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(FileInterceptor('file'))
+  importExcel(
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new FileTypeValidator({
+            fileType: /(spreadsheetml|xlsx|vnd\.ms-excel)/,
+          }),
+        ],
+      }),
+    )
+    file: Express.Multer.File,
+    @Body() dto: ImportPriceListDto,
+  ) {
+    return this.service.importFromExcel(file.buffer, dto);
   }
 }

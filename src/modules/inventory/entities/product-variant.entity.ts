@@ -38,6 +38,20 @@ export class ProductVariant extends BaseEntity {
   @Column({ type: 'numeric', precision: 14, scale: 2, default: 0 })
   cost: string;
 
+  /** Precio sin descuento (precio de lista, antes de aplicar el % de descuento). */
+  @Column({ type: 'numeric', precision: 14, scale: 2, nullable: true })
+  listPrice: string | null;
+
+  /** Porcentaje de descuento (0-100) aplicado sobre listPrice. */
+  @Column({ type: 'numeric', precision: 5, scale: 2, default: 0 })
+  discountPercent: string;
+
+  /** Cantidad en stock simple (independiente del control por bodega).
+   * De momento se trabaja sobre pedido; este campo queda listo para
+   * cuando se active el control de inventario real. */
+  @Column({ type: 'int', default: 0 })
+  stockQty: number;
+
   @OneToMany(() => Stock, (s) => s.variant)
   stock: Stock[];
 }

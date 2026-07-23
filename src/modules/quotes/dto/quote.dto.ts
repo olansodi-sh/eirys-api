@@ -42,6 +42,21 @@ export class CreateQuoteDto {
   lines: QuoteLineDto[];
 }
 
+export class UpdateQuoteDto {
+  @IsOptional()
+  @IsUUID()
+  thirdPartyId?: string;
+
+  @IsOptional()
+  validUntil?: string;
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => QuoteLineDto)
+  lines?: QuoteLineDto[];
+}
+
 export class ConvertQuoteDto {
   @IsUUID()
   warehouseId: string;

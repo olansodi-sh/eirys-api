@@ -17,7 +17,7 @@ export class CreatePriceListDto {
 
   @IsOptional()
   @IsBoolean()
-  isDefault?: boolean;
+  consumidorFinal?: boolean;
 
   @IsOptional()
   @IsBoolean()
@@ -40,4 +40,14 @@ export class SetPricesDto {
   @ValidateNested({ each: true })
   @Type(() => SetPriceItemDto)
   items: SetPriceItemDto[];
+}
+
+export class ImportPriceListDto {
+  @IsOptional()
+  @IsString()
+  name?: string;
+
+  @IsOptional()
+  @IsUUID()
+  priceListId?: string;
 }

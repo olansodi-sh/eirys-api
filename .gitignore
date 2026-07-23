@@ -3,6 +3,11 @@
 /node_modules
 /build
 
+# uploaded files (kept out of git, folder structure preserved via .gitkeep)
+/uploads/**
+!/uploads/**/
+!/uploads/**/.gitkeep
+
 # Logs
 logs
 *.log

@@ -7,7 +7,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Quote, QuoteStatus } from './entities/quote.entity';
 import { QuoteLine } from './entities/quote-line.entity';
-import { ConvertQuoteDto, CreateQuoteDto } from './dto/quote.dto';
+import {
+  ConvertQuoteDto,
+  CreateQuoteDto,
+  QuoteLineDto,
+  UpdateQuoteDto,
+} from './dto/quote.dto';
 import { ProductVariant } from '../inventory/entities/product-variant.entity';
 import { SalesService } from '../sales/sales.service';
 
@@ -21,14 +26,13 @@ export class QuotesService {
     private readonly sales: SalesService,
   ) {}
 
-  async create(dto: CreateQuoteDto): Promise<Quote> {
-    if (!dto.lines?.length) {
-      throw new BadRequestException('La cotización no tiene líneas');
-    }
+  private async buildLines(
+    lineDtos: QuoteLineDto[],
+  ): Promise<{ lines: QuoteLine[]; subtotal: number; discountTotal: number }> {
     let subtotal = 0;
     let discountTotal = 0;
     const lines: QuoteLine[] = [];
-    for (const l of dto.lines) {
+    for (const l of lineDtos) {
       const variant = await this.variants.findOne({
         where: { id: l.variantId },
       });
@@ -50,6 +54,16 @@ export class QuotesService {
         }),
       );
     }
+    return { lines, subtotal, discountTotal };
+  }
+
+  async create(dto: CreateQuoteDto): Promise<Quote> {
+    if (!dto.lines?.length) {
+      throw new BadRequestException('La cotización no tiene líneas');
+    }
+    const { lines, subtotal, discountTotal } = await this.buildLines(
+      dto.lines,
+    );
     const count = await this.quotes.count();
     const number = `C-${String(count + 1).padStart(5, '0')}`;
     return this.quotes.save(
@@ -80,6 +94,40 @@ export class QuotesService {
     const quote = await this.findOne(id);
     quote.status = status;
     return this.quotes.save(quote);
+  }
+
+  async update(id: string, dto: UpdateQuoteDto): Promise<Quote> {
+    const quote = await this.findOne(id);
+    if (quote.status === QuoteStatus.CONVERTED) {
+      throw new BadRequestException('No se puede editar una cotización convertida');
+    }
+    if (dto.thirdPartyId !== undefined) {
+      quote.thirdPartyId = dto.thirdPartyId ?? null;
+    }
+    if (dto.validUntil !== undefined) {
+      quote.validUntil = dto.validUntil ?? null;
+    }
+    if (dto.lines !== undefined) {
+      if (!dto.lines.length) {
+        throw new BadRequestException('La cotización no tiene líneas');
+      }
+      const { lines, subtotal, discountTotal } = await this.buildLines(
+        dto.lines,
+      );
+      quote.lines = lines;
+      quote.subtotal = String(subtotal);
+      quote.discount = String(discountTotal);
+      quote.total = String(subtotal - discountTotal);
+    }
+    return this.quotes.save(quote);
+  }
+
+  async remove(id: string): Promise<void> {
+    const quote = await this.findOne(id);
+    if (quote.status === QuoteStatus.CONVERTED) {
+      throw new BadRequestException('No se puede eliminar una cotización convertida');
+    }
+    await this.quotes.softRemove(quote);
   }
 
   /** Convierte la cotización en factura reutilizando el flujo de ventas. */
