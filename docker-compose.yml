@@ -1,0 +1,16 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: eirys-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: eirys
+      POSTGRES_PASSWORD: eirys
+      POSTGRES_DB: eirys
+    ports:
+      - '5432:5432'
+    volumes:
+      - eirys_pgdata:/var/lib/postgresql/data
+
+volumes:
+  eirys_pgdata:
