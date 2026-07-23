@@ -39,6 +39,43 @@ interface ImportSkippedRow {
   reason: string;
 }
 
+/** Serializa a texto legible: "Suela: PVC; Tacón: 5.5cm" */
+function serializeCharacteristics(
+  characteristics: Record<string, string> | null,
+): string {
+  if (!characteristics) return '';
+  return Object.entries(characteristics)
+    .map(([key, value]) => `${key}: ${value}`)
+    .join('; ');
+}
+
+/**
+ * Parsea "Suela: PVC; Tacón: 5.5cm" a { Suela: 'PVC', Tacón: '5.5cm' }.
+ * Tolera JSON legado (formato anterior) para no romper archivos ya exportados.
+ * Ignora pares mal formados en vez de descartar la fila completa.
+ */
+function parseCharacteristics(text: string): Record<string, string> {
+  const trimmed = text.trim();
+  if (!trimmed) return {};
+  if (trimmed.startsWith('{')) {
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (parsed && typeof parsed === 'object') return parsed;
+    } catch {
+      // no era JSON válido; se intenta como texto clave: valor
+    }
+  }
+  const result: Record<string, string> = {};
+  for (const pair of trimmed.split(';')) {
+    const idx = pair.indexOf(':');
+    if (idx === -1) continue;
+    const key = pair.slice(0, idx).trim();
+    const value = pair.slice(idx + 1).trim();
+    if (key && value) result[key] = value;
+  }
+  return result;
+}
+
 export interface ImportSummary {
   created: number;
   updated: number;
@@ -183,9 +220,7 @@ export class ProductsService {
     sheet.addRow(EXPORT_HEADERS);
 
     for (const product of products) {
-      const characteristics = product.characteristics
-        ? JSON.stringify(product.characteristics)
-        : '';
+      const characteristics = serializeCharacteristics(product.characteristics);
       for (const variant of product.variants) {
         const price = priceListId
           ? await this.pricingService.getPrice(variant.id, priceListId)
@@ -355,15 +390,11 @@ export class ProductsService {
         continue;
       }
 
-      let characteristics: Record<string, string> | undefined;
       const charText = rows.find((r) => r.characteristics)?.characteristics;
+      let characteristics: Record<string, string> | undefined;
       if (charText) {
-        try {
-          characteristics = JSON.parse(charText);
-        } catch {
-          skipped.push({ row: first.row, sku, reason: 'Características no es un JSON válido' });
-          continue;
-        }
+        const parsed = parseCharacteristics(charText);
+        characteristics = Object.keys(parsed).length > 0 ? parsed : undefined;
       }
 
       const categoryName = rows.find((r) => r.category)?.category;
