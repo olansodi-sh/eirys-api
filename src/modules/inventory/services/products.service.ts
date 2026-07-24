@@ -12,6 +12,8 @@ import { ProductVariant } from '../entities/product-variant.entity';
 import { Category } from '../entities/category.entity';
 import { Brand } from '../entities/brand.entity';
 import { Material } from '../entities/material.entity';
+import { Warehouse } from '../entities/warehouse.entity';
+import { Stock } from '../entities/stock.entity';
 import { CreateProductDto, UpdateProductDto } from '../dto/product.dto';
 import { PricingService } from '../../pricing/pricing.service';
 
@@ -95,8 +97,43 @@ export class ProductsService {
     private readonly brands: Repository<Brand>,
     @InjectRepository(Material)
     private readonly materials: Repository<Material>,
+    @InjectRepository(Warehouse)
+    private readonly warehouses: Repository<Warehouse>,
+    @InjectRepository(Stock)
+    private readonly stock: Repository<Stock>,
     private readonly pricingService: PricingService,
   ) {}
+
+  /** Bodega usada para reflejar el "Stock" del producto/Excel en existencias reales. */
+  private async getDefaultWarehouseId(): Promise<string | null> {
+    const warehouse =
+      (await this.warehouses.findOne({
+        where: { isQuality: false },
+        order: { createdAt: 'ASC' },
+      })) ?? (await this.warehouses.findOne({ order: { createdAt: 'ASC' } }));
+    return warehouse?.id ?? null;
+  }
+
+  /**
+   * Refleja `stockQty` de cada variante como existencias reales en la bodega
+   * por defecto, para que el POS (que descuenta de `stock`, no de
+   * `product_variant.stockQty`) vea la misma cantidad que se ve en el
+   * catálogo/Excel.
+   */
+  private async syncStock(variants: ProductVariant[]): Promise<void> {
+    const warehouseId = await this.getDefaultWarehouseId();
+    if (!warehouseId) return;
+    for (const variant of variants) {
+      let row = await this.stock.findOne({
+        where: { variantId: variant.id, warehouseId },
+      });
+      if (!row) {
+        row = this.stock.create({ variantId: variant.id, warehouseId, quantity: '0' });
+      }
+      row.quantity = String(variant.stockQty);
+      await this.stock.save(row);
+    }
+  }
 
   /** Precio de venta = precio sin descuento menos el % de descuento. */
   private computeFinalPrice(
@@ -148,6 +185,7 @@ export class ProductsService {
     });
     const saved = await this.products.save(product);
     await this.syncConsumidorFinalPrices(saved);
+    await this.syncStock(saved.variants);
     return saved;
   }
 
@@ -202,6 +240,7 @@ export class ProductsService {
     }
     const saved = await this.products.save(product);
     await this.syncConsumidorFinalPrices(saved);
+    if (dto.variants !== undefined) await this.syncStock(saved.variants);
     return saved;
   }
 
@@ -434,6 +473,7 @@ export class ProductsService {
         });
         await this.products.save(product);
         await this.syncConsumidorFinalPrices(product);
+        await this.syncStock(product.variants);
         created += 1;
       } else {
         product.name = first.name;
@@ -469,6 +509,7 @@ export class ProductsService {
         }
         await this.products.save(product);
         await this.syncConsumidorFinalPrices(product);
+        await this.syncStock(product.variants);
         updated += 1;
       }
     }

@@ -24,6 +24,17 @@ export class Sale extends BaseEntity {
   @Column({ type: 'uuid', nullable: true })
   thirdPartyId: string | null;
 
+  // Datos del cliente al momento de la venta (no deben cambiar si luego
+  // se edita el tercero); la factura siempre debe leer estos, no el join.
+  @Column({ type: 'varchar', nullable: true })
+  clientName: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  clientDocType: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  clientDocNumber: string | null;
+
   @Column({ type: 'uuid', nullable: true })
   priceListId: string | null;
 

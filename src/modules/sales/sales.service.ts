@@ -4,7 +4,16 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, EntityManager, Repository } from 'typeorm';
+import {
+  Between,
+  DataSource,
+  EntityManager,
+  FindOperator,
+  ILike,
+  LessThanOrEqual,
+  MoreThanOrEqual,
+  Repository,
+} from 'typeorm';
 import { Sale, SaleStatus } from './entities/sale.entity';
 import { SaleLine } from './entities/sale-line.entity';
 import { CreateSaleDto } from './dto/create-sale.dto';
@@ -53,6 +62,7 @@ export class SalesService {
       for (const line of dto.lines) {
         const variant = await variantRepo.findOne({
           where: { id: line.variantId },
+          relations: { product: true },
         });
         if (!variant) {
           throw new NotFoundException(`Variante ${line.variantId} no existe`);
@@ -78,7 +88,7 @@ export class SalesService {
         lines.push(
           manager.getRepository(SaleLine).create({
             variantId: line.variantId,
-            description: `${variant.size} / ${variant.color}`,
+            description: `${variant.product?.name ?? 'Producto'} · ${variant.size} / ${variant.color}`,
             quantity: String(line.quantity),
             unitPrice: String(line.unitPrice),
             discount: String(discount),
@@ -100,10 +110,18 @@ export class SalesService {
       const count = await saleRepo.count();
       const number = `F-${String(count + 1).padStart(5, '0')}`;
 
+      const thirdPartyRepo = manager.getRepository(ThirdParty);
+      const thirdParty = dto.thirdPartyId
+        ? await thirdPartyRepo.findOne({ where: { id: dto.thirdPartyId } })
+        : null;
+
       const sale = await saleRepo.save(
         saleRepo.create({
           number,
           thirdPartyId: dto.thirdPartyId ?? null,
+          clientName: thirdParty?.name ?? null,
+          clientDocType: thirdParty?.docType ?? null,
+          clientDocNumber: thirdParty?.docNumber ?? null,
           priceListId: dto.priceListId ?? null,
           warehouseId: dto.warehouseId,
           userId,
@@ -125,13 +143,9 @@ export class SalesService {
 
       // Saldo pendiente a cuenta del tercero (crédito).
       const pending = total - paidAmount;
-      if (dto.thirdPartyId && pending > 0) {
-        const tpRepo = manager.getRepository(ThirdParty);
-        const tp = await tpRepo.findOne({ where: { id: dto.thirdPartyId } });
-        if (tp) {
-          tp.balance = String(Number(tp.balance) + pending);
-          await tpRepo.save(tp);
-        }
+      if (thirdParty && pending > 0) {
+        thirdParty.balance = String(Number(thirdParty.balance) + pending);
+        await thirdPartyRepo.save(thirdParty);
       }
 
       return sale;
@@ -176,8 +190,50 @@ export class SalesService {
     }
   }
 
-  findAll(): Promise<Sale[]> {
-    return this.sales.find({ order: { date: 'DESC' }, take: 100 });
+  async findAll(params?: {
+    search?: string;
+    from?: string;
+    to?: string;
+  }): Promise<Sale[]> {
+    const { search, from, to } = params ?? {};
+
+    let dateFilter: FindOperator<Date> | undefined;
+    if (from && to) {
+      dateFilter = Between(new Date(`${from}T00:00:00`), new Date(`${to}T23:59:59.999`));
+    } else if (from) {
+      dateFilter = MoreThanOrEqual(new Date(`${from}T00:00:00`));
+    } else if (to) {
+      dateFilter = LessThanOrEqual(new Date(`${to}T23:59:59.999`));
+    }
+
+    if (!search) {
+      return this.sales.find({
+        where: dateFilter ? { date: dateFilter } : {},
+        order: { date: 'DESC' },
+        take: 100,
+      });
+    }
+
+    // Busca por número de factura o nombre del cliente.
+    const [byNumber, byClient] = await Promise.all([
+      this.sales.find({
+        where: { number: ILike(`%${search}%`), ...(dateFilter ? { date: dateFilter } : {}) },
+        order: { date: 'DESC' },
+        take: 100,
+      }),
+      this.sales.find({
+        where: {
+          thirdParty: { name: ILike(`%${search}%`) },
+          ...(dateFilter ? { date: dateFilter } : {}),
+        },
+        order: { date: 'DESC' },
+        take: 100,
+      }),
+    ]);
+    const byId = new Map([...byNumber, ...byClient].map((s) => [s.id, s]));
+    return [...byId.values()].sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+    );
   }
 
   async findOne(id: string): Promise<Sale> {
