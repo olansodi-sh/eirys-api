@@ -6,6 +6,15 @@ export enum CreditNoteType {
   TOTAL = 'total',
 }
 
+/** Motivo de la devolución (catálogo cerrado, para reportes consistentes). */
+export enum ReturnReason {
+  PRODUCTO_DEFECTUOSO = 'producto_defectuoso',
+  TALLA_COLOR_INCORRECTO = 'talla_color_incorrecto',
+  CLIENTE_NO_SATISFECHO = 'cliente_no_satisfecho',
+  ERROR_FACTURACION = 'error_facturacion',
+  OTRO = 'otro',
+}
+
 /** Nota crédito sobre una factura (devolución parcial o total). */
 @Entity('credit_notes')
 export class CreditNote extends BaseEntity {
@@ -25,8 +34,11 @@ export class CreditNote extends BaseEntity {
   @Column({ type: 'numeric', precision: 14, scale: 2 })
   amount: string;
 
-  @Column({ nullable: true })
-  reason: string;
+  @Column({ type: 'enum', enum: ReturnReason })
+  reason: ReturnReason;
+
+  @Column({ type: 'text' })
+  description: string;
 
   @Column({ default: false })
   restock: boolean;

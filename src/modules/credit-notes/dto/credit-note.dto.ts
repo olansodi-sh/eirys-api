@@ -1,13 +1,14 @@
 import {
   IsBoolean,
   IsEnum,
+  IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
   IsUUID,
   Min,
 } from 'class-validator';
-import { CreditNoteType } from '../entities/credit-note.entity';
+import { CreditNoteType, ReturnReason } from '../entities/credit-note.entity';
 
 export class CreateCreditNoteDto {
   @IsUUID()
@@ -22,9 +23,12 @@ export class CreateCreditNoteDto {
   @Min(0.01)
   amount?: number;
 
-  @IsOptional()
+  @IsEnum(ReturnReason)
+  reason: ReturnReason;
+
   @IsString()
-  reason?: string;
+  @IsNotEmpty()
+  description: string;
 
   /** Devolver las unidades al inventario (solo tipo total). */
   @IsOptional()

@@ -80,7 +80,7 @@ export class CreditNotesService {
           {
             amount,
             thirdPartyId: sale.thirdPartyId,
-            reason: `Nota crédito factura ${sale.number}`,
+            reason: `Nota crédito factura ${sale.number}: ${dto.description}`,
           },
           manager,
         );
@@ -97,6 +97,7 @@ export class CreditNotesService {
           type: dto.type,
           amount: String(amount),
           reason: dto.reason,
+          description: dto.description,
           restock: dto.restock ?? false,
           voucherId,
         }),
